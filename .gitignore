@@ -1,0 +1,10 @@
+target/
+bin/
+.settings/
+.classpath
+.project
+.DS_Store
+._*
+mcp-server/__pycache__/
+mcp-server/.env
+conf/app.properties

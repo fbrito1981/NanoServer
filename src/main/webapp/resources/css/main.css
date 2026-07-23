@@ -1,0 +1,188 @@
+body, html {
+	height: 100%;
+}
+.spinner {
+	position: absolute;
+	left: calc(50% - 30px);
+	top: calc(50% - 30px);
+	height: 60px;
+	width: 60px;
+	margin: 0px auto;
+	-webkit-animation: rotation .6s infinite linear;
+	-moz-animation: rotation .6s infinite linear;
+	-o-animation: rotation .6s infinite linear;
+	animation: rotation .6s infinite linear;
+	border-top: 3px solid rgba(23, 162, 184, 1);
+	border-left: 3px solid rgba(23, 162, 184, .3);
+	border-right: 3px solid rgba(23, 162, 184, .3);
+	border-bottom: 3px solid rgba(23, 162, 184, .3);
+	border-radius: 100%;
+}
+@-webkit-keyframes rotation {
+   from {-webkit-transform: rotate(0deg);}
+   to {-webkit-transform: rotate(359deg);}
+}
+@-moz-keyframes rotation {
+   from {-moz-transform: rotate(0deg);}
+   to {-moz-transform: rotate(359deg);}
+}
+@-o-keyframes rotation {
+   from {-o-transform: rotate(0deg);}
+   to {-o-transform: rotate(359deg);}
+}
+@keyframes rotation {
+   from {transform: rotate(0deg);}
+   to {transform: rotate(359deg);}
+}
+.logo-font {
+	font-family: 'SignPainterHouseScript';
+}
+.logo-font-big {
+	font-size: 100px;
+}
+.logo-font-medium {
+	font-size: 50px;
+}
+.logo-font-small {
+	font-size: 30px;
+}
+.login-width {
+	width: 320px;
+}
+.min-100 {
+	min-height: 100%;
+}
+.vertical-center {
+	min-height: 100%;  /* Fallback for browsers do NOT support vh unit */
+	min-height: 100vh; /* These two lines are counted as one :-)       */
+	display: flex;
+	align-items: center;
+}
+.list-group-horizontal {
+	-ms-flex-direction: row;
+	flex-direction: row;
+}
+@keyframes spinner-border {
+	to { transform: rotate(360deg); }
+} 
+.spinner-border {
+	display: inline-block;
+	width: 2rem;
+	height: 2rem;
+	vertical-align: text-bottom;
+	border: .25em solid currentColor;
+	border-right-color: transparent;
+	border-radius: 50%;
+	-webkit-animation: spinner-border .75s linear infinite;
+	animation: spinner-border .75s linear infinite;
+}
+.spinner-border-sm {
+	width: 1rem;
+	height: 1rem;
+	border-width: .2em;
+}
+.navbar-brand svg {
+	fill: white;
+	width: 50%;
+	height: 50%;
+}
+.btn-sm-important {
+	padding: 0.25rem 0.5rem !important;
+	font-size: 0.7875rem !important;
+	line-height: 1.5 !important;
+	border-radius: 0 !important;
+}
+.w-max-content {
+	width: max-content;
+}
+.image-preview {
+	font-size: 30px;
+	overflow: hidden;
+	position: relative;
+}
+.image-preview .fa-camera-retro {
+	vertical-align: baseline;
+}
+.image-preview canvas {
+	position: absolute;
+	left: 0px;
+	width: inherit;
+	height: inherit;
+}
+.profile-picture {
+	width: 120px;
+	height: 120px;
+	line-height: 120px;
+}
+.sponsor-image-large {
+	width: 200px;
+	height: 200px;
+	line-height: 200px;
+}
+.sponsor-image-medium {
+	width: 150px;
+	height: 150px;
+	line-height: 150px;
+}
+.sponsor-image-small {
+	width: 50px;
+	height: 50px;
+	line-height: 50px;
+}
+.events-logo {
+	width: 200px;
+	height: 200px;
+	line-height: 200px;
+}
+.events-portrait {
+	width: 160px;
+	height: 284px;
+	line-height: 284px;
+}
+.events-portrait-real {
+	width: 720px;
+	height: 1280px;
+}
+.events-landscape {
+	width: 284px;
+	height: 160px;
+	line-height: 160px;
+}
+.events-landscape-real {
+	width: 1280px;
+	height: 720px;
+}
+.invisible {
+	position: absolute;
+	opacity: 0;
+}
+.image-container {
+	overflow: hidden;
+}
+.image-tools {
+	opacity: 0;
+	margin-top: -40px;
+}
+.image-container:hover .image-tools {
+	opacity: 1;
+	margin-top: 0px;
+}
+.slide-tools {
+	transition: all 0.25s ease-out;
+}
+.autocomplete {
+	width: 100%;
+	max-height: 200px;
+	z-index: 4;
+	position: absolute;
+	top: 40px;
+}
+.modal-map {
+	max-width: 80% !important;
+}
+.modal-feature {
+	max-width: 60% !important;
+}
+.lh-2 {
+	line-height: 2rem;
+}

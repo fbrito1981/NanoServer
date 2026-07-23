@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<Configuration status="DEBUG">
+    <Properties>
+        <Property name="LOG_PATTERN">%d{dd MMM yyyy HH:mm:ss} %5p %c{1}:%L - %m%n</Property>
+        <Property name="BASE_PATH">$${jndi:basepath}</Property>
+        <Property name="APP_NAME">$${jndi:appname}</Property>
+    </Properties>
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+        <RollingFile name="info" fileName="${BASE_PATH}/apps/logs/${APP_NAME}/info.log"
+            filePattern="${BASE_PATH}/apps/logs/${APP_NAME}/info-%d{yyyy-MM-dd}-%i.log">
+            <LevelRangeFilter minLevel="INFO" maxLevel="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>        
+        <RollingFile name="error" fileName="${BASE_PATH}/apps/logs/${APP_NAME}/error.log"
+            filePattern="${BASE_PATH}/apps/logs/${APP_NAME}/error-%d{yyyy-MM-dd}-%i.log">
+            <LevelRangeFilter minLevel="ERROR" maxLevel="ERROR" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="19500KB" />
+            </Policies>
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="nano.server" additivity="false" level="debug">
+            <AppenderRef ref="info" />
+            <AppenderRef ref="error" />
+            <AppenderRef ref="console" />
+        </Logger>
+                 
+        <Root level="error">
+            <AppenderRef ref="console"/>
+        </Root>
+    </Loggers>
+</Configuration>

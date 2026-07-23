@@ -1,0 +1,15 @@
+dbHost=jdbc:mysql://localhost:3306/nano?useSSL=false
+dbUser=root
+dbPass=
+adminHost=https://your-admin-host.example.com
+emailUser=noreply@example.com
+emailPass=
+emailHost=127.0.0.1
+emailPort=25
+emailSmtpAuth=true
+mailSmtpSslTrust=*
+mailSmtpSslProtocols=TLSv1.2
+emailSmtpStartTtls=false
+allowExternalAccess=false
+securityKey=
+securitySecret=
