@@ -23,7 +23,9 @@ public enum ServerProperties {
 	EMAIL_SMTP_STARTTTLS_ENABLE("emailSmtpStartTtls"),
 	ALLOW_EXTERNAL_ACCESS("allowExternalAccess"),
 	SECURITY_KEY("securityKey"),
-	SECURITY_SECRET("securitySecret");
+	SECURITY_SECRET("securitySecret"),
+	GEMINI_API_KEY("geminiApiKey"),
+	GEMINI_MODEL("geminiModel");
 	
 	private static final String PROPERTIES_FILE_NAME = "app.properties";
 	

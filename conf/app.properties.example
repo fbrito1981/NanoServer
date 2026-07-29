@@ -13,3 +13,5 @@ emailSmtpStartTtls=false
 allowExternalAccess=false
 securityKey=
 securitySecret=
+geminiApiKey=
+geminiModel=gemini-2.0-flash
