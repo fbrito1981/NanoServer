@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,6 +41,10 @@ public class WSSecurityUtils {
 			for (int i = 0; i< tokens.length; i++) {
 				String token = tokens[i];
 				String[] keyValue = token.split("=\"");
+				if (keyValue.length < 2) {
+					LOGGER.error("Malformed X-WSSE token '{}' in header '{}'.", token, wsseHeaders);
+					return false;
+				}
 				keyValueMap.put(keyValue[0], keyValue[1].replaceAll("\"", ""));
 			}
 
@@ -61,7 +66,11 @@ public class WSSecurityUtils {
 			byte[] nonce = Base64.getDecoder().decode(nonceEncoded);
 			String created = keyValueMap.get(CREATED_KEY);
 			try {
+				// 'Z' in DATE_FORMAT is a literal char, not a real offset directive — without
+				// forcing UTC here, this would depend on the JVM's default timezone matching
+				// whatever the client actually meant by "Z", which broke for a client outside UTC.
 				DateFormat dateFormat = new SimpleDateFormat(DATE_FORMAT);
+				dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 				long createdTimestamp = dateFormat.parse(created).getTime();
 				long currentTimestamp =  new Date().getTime();
 				if (currentTimestamp - createdTimestamp > NONCE_TIME_TO_LIVE) {
@@ -98,7 +107,9 @@ public class WSSecurityUtils {
 		Integer randomNumber = SecureUtils.getCode();
 		byte[] randomBytes = randomNumber.toString().getBytes(StandardCharsets.UTF_8);
 		String nonceEncoded = Base64.getEncoder().encodeToString(randomBytes);
-		String created = new SimpleDateFormat(DATE_FORMAT).format(new Date());
+		SimpleDateFormat createdFormat = new SimpleDateFormat(DATE_FORMAT);
+		createdFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+		String created = createdFormat.format(new Date());
 		String passwordDigest = generatePasswordDigest(randomBytes, created.getBytes(StandardCharsets.UTF_8),
 				secretToken.getBytes(StandardCharsets.UTF_8));
 		

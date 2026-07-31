@@ -53,11 +53,11 @@ import nano.server.utils.MapperUtils;
 import nano.server.utils.WSSecurityUtils;
 
 /**
- * Chat/LLM proxy for the Fuerz4 Assistant Android app. Holds the Gemini API key server-side
+ * Chat/LLM proxy for the Fuerz4 Assistant Android app. Holds the Grok (xAI) API key server-side
  * (never shipped in the public app/repo) and executes the same 5 "tools" the standalone
  * `mcp-server/server.py` MCP bridge exposes — but in-process against the already-autowired
  * device/log service beans, instead of calling out to that separate Python service. See
- * CLAUDE.md in the Fuerz4Assistant repo for the full rationale and the exact Gemini request/
+ * CLAUDE.md in the Fuerz4Assistant repo for the full rationale and the exact Grok request/
  * response shape this expects to be validated against.
  */
 @Controller
@@ -65,9 +65,8 @@ public class ChatWebService extends BaseController {
 	private static final Logger LOGGER = LogManager.getLogger(ChatWebService.class);
 
 	private static final int MAX_TOOL_ITERATIONS = 5;
-	private static final String DEFAULT_MODEL = "gemini-2.0-flash";
-	private static final String GEMINI_URL_TEMPLATE =
-			"https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent?key=%s";
+	private static final String DEFAULT_MODEL = "grok-4-fast";
+	private static final String GROK_URL = "https://api.x.ai/v1/chat/completions";
 	private static final String[] DATE_PATTERNS = {
 			"yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm:ssXXX", "yyyy-MM-dd"
 	};
@@ -97,7 +96,7 @@ public class ChatWebService extends BaseController {
 					ChatRequestDto chatRequest = MapperUtils.getObject(data, ChatRequestDto.class);
 
 					if (chatRequest.getMessage() != null && !chatRequest.getMessage().isEmpty()) {
-						String reply = converseWithGemini(user, chatRequest);
+						String reply = converseWithGrok(user, chatRequest);
 
 						return new ResultDto(true, new ChatResponseDto(reply));
 					} else {
@@ -125,83 +124,70 @@ public class ChatWebService extends BaseController {
 				ServerProperties.SECURITY_KEY.getValue(), ServerProperties.SECURITY_SECRET.getValue());
 	}
 
-	// ---- Gemini conversation + tool-calling loop ----------------------------------------------
+	// ---- Grok conversation + tool-calling loop -------------------------------------------------
 
-	private String converseWithGemini(User user, ChatRequestDto chatRequest) throws Exception {
+	private String converseWithGrok(User user, ChatRequestDto chatRequest) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
-		ArrayNode contents = mapper.createArrayNode();
+		ArrayNode messages = mapper.createArrayNode();
 
 		if (chatRequest.getHistory() != null) {
 			for (ChatTurnDto turn : chatRequest.getHistory()) {
-				String role = "user".equalsIgnoreCase(turn.getRole()) ? "user" : "model";
-				contents.add(buildTextContent(mapper, role, turn.getText()));
+				String role = "user".equalsIgnoreCase(turn.getRole()) ? "user" : "assistant";
+				messages.add(buildMessage(mapper, role, turn.getText()));
 			}
 		}
-		contents.add(buildTextContent(mapper, "user", chatRequest.getMessage()));
+		messages.add(buildMessage(mapper, "user", chatRequest.getMessage()));
 
 		for (int iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration++) {
 			ObjectNode requestBody = mapper.createObjectNode();
-			requestBody.set("contents", contents);
+			requestBody.set("messages", messages);
 			requestBody.set("tools", buildToolsDeclaration(mapper));
 
-			JsonNode candidate = callGemini(mapper, requestBody).path("candidates").path(0);
-			JsonNode contentNode = candidate.path("content");
-			JsonNode parts = contentNode.path("parts");
+			JsonNode message = callGrok(mapper, requestBody).path("choices").path(0).path("message");
+			JsonNode toolCalls = message.path("tool_calls");
 
-			JsonNode functionCall = null;
-			StringBuilder textReply = new StringBuilder();
-
-			for (JsonNode part : parts) {
-				if (part.has("functionCall")) {
-					functionCall = part.get("functionCall");
-				} else if (part.has("text")) {
-					textReply.append(part.get("text").asText());
-				}
+			if (!toolCalls.isArray() || toolCalls.isEmpty()) {
+				return message.path("content").asText("");
 			}
 
-			if (functionCall == null) {
-				return textReply.toString();
+			messages.add(message);
+
+			for (JsonNode toolCall : toolCalls) {
+				String toolCallId = toolCall.path("id").asText();
+				String toolName = toolCall.path("function").path("name").asText();
+				JsonNode args = mapper.readTree(toolCall.path("function").path("arguments").asText("{}"));
+				ObjectNode toolResult = executeTool(mapper, user, toolName, args);
+
+				ObjectNode toolMessage = mapper.createObjectNode();
+				toolMessage.put("role", "tool");
+				toolMessage.put("tool_call_id", toolCallId);
+				toolMessage.put("content", mapper.writeValueAsString(toolResult));
+
+				messages.add(toolMessage);
 			}
-
-			contents.add(contentNode);
-
-			String toolName = functionCall.path("name").asText();
-			JsonNode args = functionCall.path("args");
-			ObjectNode toolResult = executeTool(mapper, user, toolName, args);
-
-			ObjectNode functionTurn = mapper.createObjectNode();
-			functionTurn.put("role", "function");
-			ArrayNode functionParts = functionTurn.putArray("parts");
-			ObjectNode functionResponsePart = functionParts.addObject();
-			ObjectNode functionResponse = functionResponsePart.putObject("functionResponse");
-			functionResponse.put("name", toolName);
-			functionResponse.set("response", toolResult);
-
-			contents.add(functionTurn);
 		}
 
 		throw new IllegalStateException("El asistente no devolvió una respuesta final tras varias llamadas a herramientas.");
 	}
 
-	private ObjectNode buildTextContent(ObjectMapper mapper, String role, String text) {
+	private ObjectNode buildMessage(ObjectMapper mapper, String role, String text) {
 		ObjectNode node = mapper.createObjectNode();
 		node.put("role", role);
-		ArrayNode parts = node.putArray("parts");
-		parts.addObject().put("text", text);
+		node.put("content", text);
 		return node;
 	}
 
-	private JsonNode callGemini(ObjectMapper mapper, ObjectNode requestBody) throws Exception {
-		String apiKey = ServerProperties.GEMINI_API_KEY.getValue();
-		String model = ServerProperties.GEMINI_MODEL.getValue();
+	private JsonNode callGrok(ObjectMapper mapper, ObjectNode requestBody) throws Exception {
+		String apiKey = ServerProperties.GROK_API_KEY.getValue();
+		String model = ServerProperties.GROK_MODEL.getValue();
 		if (model == null || model.isEmpty()) {
 			model = DEFAULT_MODEL;
 		}
+		requestBody.put("model", model);
 
-		String url = String.format(GEMINI_URL_TEMPLATE, model, apiKey);
-
-		HttpPost post = new HttpPost(url);
+		HttpPost post = new HttpPost(GROK_URL);
 		post.setHeader("Content-Type", "application/json");
+		post.setHeader("Authorization", "Bearer " + apiKey);
 		post.setEntity(new StringEntity(mapper.writeValueAsString(requestBody), StandardCharsets.UTF_8));
 
 		try (CloseableHttpClient client = HttpClients.createDefault();
@@ -209,7 +195,7 @@ public class ChatWebService extends BaseController {
 			String body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
 
 			if (httpResponse.getStatusLine().getStatusCode() >= 300) {
-				throw new IllegalStateException("Gemini respondió con error: " + body);
+				throw new IllegalStateException("Grok respondió con error: " + body);
 			}
 
 			return mapper.readTree(body);
@@ -220,20 +206,25 @@ public class ChatWebService extends BaseController {
 
 	private ArrayNode buildToolsDeclaration(ObjectMapper mapper) {
 		ArrayNode tools = mapper.createArrayNode();
-		ObjectNode toolsEntry = tools.addObject();
-		ArrayNode declarations = toolsEntry.putArray("functionDeclarations");
 
-		declarations.add(declareListDevices(mapper));
-		declarations.add(declareLatest(mapper, "get_home_temperature_humidity",
-				"Devuelve la última lectura de temperatura y humedad de un dispositivo de ambiente."));
-		declarations.add(declareHistory(mapper, "get_temperature_humidity_history",
-				"Devuelve el historial de temperatura y humedad de un dispositivo de ambiente."));
-		declarations.add(declareLatest(mapper, "get_home_energy_consumption",
-				"Devuelve la última lectura de consumo eléctrico de un dispositivo de energía."));
-		declarations.add(declareHistory(mapper, "get_energy_consumption_history",
-				"Devuelve el historial de consumo eléctrico de un dispositivo de energía."));
+		tools.add(wrapAsFunctionTool(mapper, declareListDevices(mapper)));
+		tools.add(wrapAsFunctionTool(mapper, declareLatest(mapper, "get_home_temperature_humidity",
+				"Devuelve la última lectura de temperatura y humedad de un dispositivo de ambiente.")));
+		tools.add(wrapAsFunctionTool(mapper, declareHistory(mapper, "get_temperature_humidity_history",
+				"Devuelve el historial de temperatura y humedad de un dispositivo de ambiente.")));
+		tools.add(wrapAsFunctionTool(mapper, declareLatest(mapper, "get_home_energy_consumption",
+				"Devuelve la última lectura de consumo eléctrico de un dispositivo de energía.")));
+		tools.add(wrapAsFunctionTool(mapper, declareHistory(mapper, "get_energy_consumption_history",
+				"Devuelve el historial de consumo eléctrico de un dispositivo de energía.")));
 
 		return tools;
+	}
+
+	private ObjectNode wrapAsFunctionTool(ObjectMapper mapper, ObjectNode functionDeclaration) {
+		ObjectNode tool = mapper.createObjectNode();
+		tool.put("type", "function");
+		tool.set("function", functionDeclaration);
+		return tool;
 	}
 
 	private ObjectNode declareListDevices(ObjectMapper mapper) {
