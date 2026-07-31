@@ -110,7 +110,7 @@ public class LoginWebService extends BaseController {
 				
 				if (user != null) {
 					if (user.isActive()) {
-						if (user.getToken().equals(tokenDto.getToken())) {
+						if (tokenDto.getToken().equals(user.getToken())) {
 							addTokenToResponse(tokenDto.getToken(), response);
 							
 							String picture = null;

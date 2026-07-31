@@ -112,8 +112,11 @@ public class BaseController {
 			
 			if (email != null && !email.isEmpty()) {
 				User tokenUser = userService.getUser(email, SecureUtils.getDbKey());
-				
-				if (tokenUser.getToken().equals(token)) {
+
+				// tokenUser can be null (stale token for a deleted user) and getToken() can be
+				// null (cleared by a password reset/logout) — either means "not logged in",
+				// not an NPE that should fall through to a half-rendered page.
+				if (tokenUser != null && token.equals(tokenUser.getToken())) {
 					user = tokenUser;
 				}
 			}

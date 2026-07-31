@@ -2,9 +2,15 @@ package nano.server.dtos;
 
 import java.util.Date;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import nano.server.db.entities.Device;
+import nano.server.utils.MapperUtils;
 
 public class DeviceDto {
+	private static final Logger LOGGER = LogManager.getLogger(DeviceDto.class);
+
 	private Boolean active;
 	private String activeLabel;
 	private String uuid;
@@ -13,6 +19,7 @@ public class DeviceDto {
 	private String os;
 	private String version;
 	private String type;
+	private DeviceSettingsDto settings;
 	private Date created;
 	private Date updated;
 
@@ -29,6 +36,14 @@ public class DeviceDto {
 		this.type = device.getType();
 		this.created = device.getCreated();
 		this.updated = device.getUpdated();
+
+		if (device.getSettings() != null) {
+			try {
+				this.settings = MapperUtils.getObject(device.getSettings(), DeviceSettingsDto.class);
+			} catch (Exception e) {
+				LOGGER.warn("Failed to parse stored settings for device {}", device.getUuid(), e);
+			}
+		}
 	}
 	
 	public Boolean getActive() {
@@ -93,6 +108,14 @@ public class DeviceDto {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public DeviceSettingsDto getSettings() {
+		return settings;
+	}
+
+	public void setSettings(DeviceSettingsDto settings) {
+		this.settings = settings;
 	}
 
 	public Date getCreated() {

@@ -54,6 +54,10 @@ public class DeviceDao extends BaseDao<Device> {
 		script.addParam(new DBParam("mModel", entity.getModel(), true));
 		script.addParam(new DBParam("mOs", entity.getOs(), true));
 		script.addParam(new DBParam("mVersion", entity.getVersion(), true));
+		// escaped here since DBParam/DBAccess interpolate values into the SQL string unescaped,
+		// and settings (unlike the other fields) carries user-typed free text (SSID) via JSON
+		String escapedSettings = entity.getSettings() != null ? entity.getSettings().replace("'", "''") : null;
+		script.addParam(new DBParam("mSettings", escapedSettings, true));
 		script.addParam(new DBParam("mActive", entity.isActive(), false));
 		
 		return script;
@@ -79,6 +83,7 @@ public class DeviceDao extends BaseDao<Device> {
 					resultSet.getBoolean("active"),
 					resultSet.getTimestamp("created"),
 					resultSet.getTimestamp("updated"));
+			device.setSettings(resultSet.getString("settings"));
 
 			return device;
 		} catch (SQLException e) {

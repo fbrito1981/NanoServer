@@ -15,6 +15,7 @@ public enum ServerProperties {
 	ADMIN_HOST("adminHost"),
 	EMAIL_USER("emailUser"),
 	EMAIL_PASS("emailPass"),
+	EMAIL_FROM("emailFrom"),
 	EMAIL_HOST("emailHost"),
 	EMAIL_PORT("emailPort"),
 	EMAIL_SMTP_AUTH("emailSmtpAuth"),
@@ -24,8 +25,8 @@ public enum ServerProperties {
 	ALLOW_EXTERNAL_ACCESS("allowExternalAccess"),
 	SECURITY_KEY("securityKey"),
 	SECURITY_SECRET("securitySecret"),
-	GEMINI_API_KEY("geminiApiKey"),
-	GEMINI_MODEL("geminiModel");
+	GROK_API_KEY("grokApiKey"),
+	GROK_MODEL("grokModel");
 	
 	private static final String PROPERTIES_FILE_NAME = "app.properties";
 	

@@ -9,6 +9,7 @@ public class Device {
 	private String model;
 	private String os;
 	private String version;
+	private String settings;
 	private Boolean active;
 	private Date created;
 	private Date updated;
@@ -77,11 +78,19 @@ public class Device {
 	public String getVersion() {
 		return version;
 	}
-	
+
 	public void setVersion(String version) {
 		this.version = version;
 	}
-	
+
+	public String getSettings() {
+		return settings;
+	}
+
+	public void setSettings(String settings) {
+		this.settings = settings;
+	}
+
 	public boolean isActive() {
 		return active;
 	}

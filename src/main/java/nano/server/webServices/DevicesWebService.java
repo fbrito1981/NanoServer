@@ -124,6 +124,10 @@ public class DevicesWebService extends BaseController {
 							Device device = new Device(deviceDto.getUuid(), user.getEmail(), deviceDto.getName(),
 									deviceDto.getModel(), deviceDto.getOs(), deviceDto.getVersion());
 
+							if (deviceDto.getSettings() != null) {
+								device.setSettings(MapperUtils.getString(deviceDto.getSettings()));
+							}
+
 							deviceService.setDevice(device);
 
 							Device created = deviceService.getDevice(deviceDto.getUuid());
@@ -176,6 +180,9 @@ public class DevicesWebService extends BaseController {
 						}
 						if (deviceDto.getActive() != null) {
 							device.setActive(deviceDto.getActive());
+						}
+						if (deviceDto.getSettings() != null) {
+							device.setSettings(MapperUtils.getString(deviceDto.getSettings()));
 						}
 
 						deviceService.setDevice(device);

@@ -11,9 +11,6 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-
 import org.springframework.web.multipart.MultipartFile;
 
 import nano.server.enums.EntityType;
@@ -22,19 +19,25 @@ import nano.server.enums.FolderType;
 
 public class FileUtils {
 	private final static String ROOT_FOLDER = "apps";
-	
+
+	// Was resolved via JNDI (java:comp/env, bound from ROOT.xml's <Environment> entries), but that
+	// lookup races Tomcat's own context startup — losing it leaves ServerProperties (which calls
+	// this for FolderType.CONFIG) permanently unable to load app.properties for the process's whole
+	// lifetime, silently nulling every DB/WSSE/email/API credential. Hardcoded to match ROOT.xml's
+	// fixed values (this deployment only ever runs with these) rather than fixing the race.
+	private final static String BASE_PATH = "/etc";
+	private final static String APP_NAME = "nano_server";
+
 	public static String getContent(String path, Charset encoding) throws Exception {
 		byte[] encoded = Files.readAllBytes(Paths.get(path));
-		
+
 		return new String(encoded, encoding);
 	}
-	
+
 	public static String getBasePath(FolderType folderType) throws Exception {
-		InitialContext context = new InitialContext();
-		Context enviroment = (Context) context.lookup("java:comp/env");
-		String basePath = (String) enviroment.lookup("basepath");
-		String appName = (String) enviroment.lookup("appname");
-		
+		String basePath = BASE_PATH;
+		String appName = APP_NAME;
+
 		String path = String.format(Locale.getDefault(), "%s%s%s%s%s%s%s",
 				basePath, File.separator, ROOT_FOLDER, File.separator,
 				folderType.getValue(), File.separator, appName);

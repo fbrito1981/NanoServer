@@ -90,7 +90,7 @@ public class EmailUtils {
 		String toList = getAddressList(to);
 		
 		MimeMessage message = new MimeMessage(session);
-		message.setFrom(new InternetAddress(ServerProperties.EMAIL_USER.getValue()));
+		message.setFrom(new InternetAddress(ServerProperties.EMAIL_FROM.getValue()));
 		message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toList));
 		message.setSubject(subject);
 		message.setText(content, "utf-8", "html");

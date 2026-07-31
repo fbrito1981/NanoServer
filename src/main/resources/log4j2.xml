@@ -3,8 +3,12 @@
 <Configuration status="DEBUG">
     <Properties>
         <Property name="LOG_PATTERN">%d{dd MMM yyyy HH:mm:ss} %5p %c{1}:%L - %m%n</Property>
-        <Property name="BASE_PATH">$${jndi:basepath}</Property>
-        <Property name="APP_NAME">$${jndi:appname}</Property>
+        <!-- Was ${jndi:basepath}/${jndi:appname}, resolved via the ROOT.xml Context's Environment
+             entries — but Log4j2 disables JNDI lookups by default since the Log4Shell CVE fix, so
+             this silently resolved to the literal string instead of /etc/nano_server, breaking file
+             logging. Hardcoded to match ROOT.xml's fixed values rather than re-enabling JNDI lookups. -->
+        <Property name="BASE_PATH">/etc</Property>
+        <Property name="APP_NAME">nano_server</Property>
     </Properties>
     <Appenders>
         <Console name="console" target="SYSTEM_OUT" follow="true">

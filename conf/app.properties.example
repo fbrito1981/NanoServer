@@ -2,16 +2,19 @@ dbHost=jdbc:mysql://localhost:3306/nano?useSSL=false
 dbUser=root
 dbPass=
 adminHost=https://your-admin-host.example.com
-emailUser=noreply@example.com
+# emailUser is the SMTP AUTH login (e.g. an ESP-issued SMTP login, not necessarily an inbox);
+# emailFrom is the visible "From" address and must be a verified sender/domain with your ESP.
+emailUser=smtp-login@example.com
 emailPass=
-emailHost=127.0.0.1
-emailPort=25
+emailFrom=noreply@example.com
+emailHost=smtp-relay.example.com
+emailPort=587
 emailSmtpAuth=true
-mailSmtpSslTrust=*
+mailSmtpSslTrust=smtp-relay.example.com
 mailSmtpSslProtocols=TLSv1.2
-emailSmtpStartTtls=false
+emailSmtpStartTtls=true
 allowExternalAccess=false
 securityKey=
 securitySecret=
-geminiApiKey=
-geminiModel=gemini-2.0-flash
+grokApiKey=
+grokModel=grok-4-fast

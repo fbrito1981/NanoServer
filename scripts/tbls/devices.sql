@@ -7,6 +7,7 @@ create table devices (
 	model varchar(255) not null,
 	os varchar(255) not null,
 	version varchar(255) not null,
+	settings text null,
 	active bool not null default true,
 	created timestamp not null default current_timestamp(),
 	updated timestamp null on update current_timestamp(),
