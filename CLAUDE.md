@@ -120,9 +120,51 @@ mvn clean package -DskipTests
 ### Deployment
 
 - **Type**: WAR (Web Application Archive)
-- **Final Name**: "NanO Server" (from pom.xml)
+- **Final Name**: "NanO Server" (from pom.xml) — Maven produces `target/NanO Server.war` (literal
+  space in the filename); quote it (`"target/NanO Server.war"`) in any shell command that touches it.
 - **Target Container**: Any Servlet 2.5+ compatible container (Tomcat, etc.)
 - **Multipart Upload**: Max 10MB (configured in Spring's CommonsMultipartResolver)
+
+#### Live deploy to `nano-server`
+
+Production/live instance is a Tomcat 8.5.90 container (`nano_server`, via `sudo docker`) on the
+host reachable over SSH as `nano-server` (alias in `~/.ssh/config`, private VPN address
+`10.8.4.6`). The public domain `nano.fuerz4.com` reaches this **same** box through a Cloudflare
+Tunnel (`cloudflared` runs there as a service) — there is no separate staging/production split;
+deploying to `nano-server` **is** deploying to what the public domain (and therefore every mobile
+app pointed at it, including Fuerz4 Assistant) actually serves. There's no CI/CD — deploys are a
+manual, three-step process:
+
+1. **Build** locally: `mvn -o clean package -DskipTests` → produces `target/NanO Server.war`.
+2. **Upload**, renamed to match the deploy script's expectation:
+   `scp "target/NanO Server.war" nano-server:~/NanoServer.war`
+3. **Run the existing update script** on the remote host (passwordless `sudo` is configured there
+   for the `updateNanoServer.sh` steps):
+   `ssh nano-server "cd ~ && bash updateNanoServer.sh"`
+
+   `~/updateNanoServer.sh` (root-owned, not executable — invoke with `bash`, not `./`) does, in
+   order: `sudo docker stop nano_server` → backs up the currently-deployed WAR to
+   `~/backups/nano_server/NanoServer_<date>.war` → removes the exploded
+   `/etc/apps/webapps/nano_server/ROOT` directory → moves the freshly-uploaded
+   `~/NanoServer.war` into `/etc/apps/webapps/nano_server/ROOT.war` → `sudo docker start
+   nano_server` (Tomcat re-explodes and redeploys the WAR on startup). This backup step is the
+   rollback path if a deploy goes bad: restore the most recent file under
+   `~/backups/nano_server/` to `/etc/apps/webapps/nano_server/ROOT.war` and re-run the stop/start.
+4. **Verify** the container came back up and the new code is actually being served — don't just
+   trust the script's "Done!" output:
+   - `ssh nano-server "sudo docker ps --filter name=nano_server"` (should show `Up` with a fresh
+     "CREATED"/uptime) and `sudo docker logs --tail 40 nano_server` (look for Spring's
+     `FrameworkServlet 'NanoServer': initialization completed`, not a stack trace).
+   - Hit a known endpoint through the **public** URL (not just `localhost` on the box) to confirm
+     the Cloudflare Tunnel is routing to the freshly-started container, e.g.
+     `curl -X POST https://nano.fuerz4.com/api/services/devices/latestValue -d '{}'` — a `401`
+     (WSSE-unauthorized) confirms the route is live and mapped; a `404` means the deploy didn't
+     actually pick up the new controller, a `500`/connection error means the container didn't
+     come back up cleanly.
+
+There is no automated test suite gating this — `mvn -o compile`/`package` succeeding only proves
+the code compiles, not that it behaves correctly against live data. Treat every deploy as
+needing a manual smoke test against a real device/app afterward.
 
 ## Database Scripts
 
