@@ -1,4 +1,14 @@
+function syncNavbarHeight() {
+	var navbar = document.querySelector('nav.navbar');
+	if (navbar) {
+		document.documentElement.style.setProperty('--navbar-height', navbar.offsetHeight + 'px');
+	}
+}
+
 $(document).ready(function() {
+	syncNavbarHeight();
+	$(window).on('resize', syncNavbarHeight);
+
     $('form').submit(function(e) {
 		e.preventDefault();
 		
@@ -64,6 +74,18 @@ $(document).ready(function() {
 	});
 	
 	keepSessionAlive();
+
+	$(document).on('click', '.password-toggle-btn', function() {
+		var target = $('#' + $(this).data('target'));
+		var icon = $(this).find('i');
+		if (target.attr('type') === 'password') {
+			target.attr('type', 'text');
+			icon.removeClass('fa-eye').addClass('fa-eye-slash');
+		} else {
+			target.attr('type', 'password');
+			icon.removeClass('fa-eye-slash').addClass('fa-eye');
+		}
+	});
 });
 
 function toggleSidebar() {

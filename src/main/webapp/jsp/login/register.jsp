@@ -33,14 +33,20 @@
 				<div class="card border-0 p-3 login-width">
 					<img src="${appCtx}/resources/img/logo_wide_black.svg" class="card-img-top" alt="${page_title}">
 					<div class="card-body">
-						<form id="recover_form" action="${appCtx}/validateCode" method="post">
-							<input type="hidden" id="error_msg_general" value="${error_msg_general}" />
-							<input type="hidden" name="email" value="${email}" />
+						<form id="register_form" action="${appCtx}/register" method="post">
 							<div class="input-group form-group">
-								<input type="number" min="${minCodeValue}" max="${maxCodeValue}" class="form-control" name="code" id="login_ph_email" placeholder="${recover_ph_code}" required>
+								<input type="text" class="form-control" name="name" placeholder="${register_ph_name}" required>
 							</div>
-							<input type="submit" id="login_btn_enter" value="${recover_btn_enter}" class="btn btn-primary w-100" />
+							<div class="input-group form-group">
+								<input type="text" class="form-control" name="email" placeholder="${register_ph_email}" required>
+							</div>
+							<input type="submit" value="${register_btn_enter}" class="btn btn-primary w-100" />
 						</form>
+					</div>
+					<div class="card-footer border-0 bg-transparent">
+						<div class="d-flex justify-content-center">
+							<a href="${appCtx}/welcome" id="register_btn_back">${register_btn_back}</a>
+						</div>
 					</div>
 				</div>
 			</div>

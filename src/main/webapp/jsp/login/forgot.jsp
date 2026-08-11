@@ -16,12 +16,12 @@
 		<link rel="apple-touch-icon" href="${appCtx}/resources/icons/apple-touch-icon.png">
 		<link rel="manifest" href="${appCtx}/resources/icons/manifest.json">
 		<link rel="stylesheet" href="${appCtx}/resources/css/vendor/bootstrap-4.0.0.min.css">
-		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20251124">
+		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20260807h">
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/jquery-3.5.1.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/popper-1.12.9.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/bootstrap-4.0.0.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/secure.js"></script>
-		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20251120"></script>
+		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20260807b"></script>
 		<title>${page_title}</title>
 		<script type="text/javascript">
 			var appCtx ='${appCtx}';
@@ -30,7 +30,7 @@
 	<body>
 		<div class="container h-100 min-100">
 			<div class="d-flex justify-content-center vertical-center">
-				<div class="card border-0 p-3 bg-light login-width">
+				<div class="card border-0 p-3 login-width">
 					<img src="${appCtx}/resources/img/logo_wide_black.svg" class="card-img-top" alt="${page_title}">
 					<div class="card-body">
 						<form id="forgot_form" action="${appCtx}/requestCode" method="post">
@@ -39,6 +39,11 @@
 							</div>
 							<input type="submit" value="${forgot_btn_enter}" class="btn btn-primary w-100" />
 						</form>
+					</div>
+					<div class="card-footer border-0 bg-transparent">
+						<div class="d-flex justify-content-center">
+							<a href="${appCtx}/welcome" id="forgot_btn_back">${forgot_btn_back}</a>
+						</div>
 					</div>
 				</div>
 			</div>

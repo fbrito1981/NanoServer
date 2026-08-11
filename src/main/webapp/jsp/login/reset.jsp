@@ -16,13 +16,16 @@
 		<link rel="apple-touch-icon" href="${appCtx}/resources/icons/apple-touch-icon.png">
 		<link rel="manifest" href="${appCtx}/resources/icons/manifest.json">
 		<link rel="stylesheet" href="${appCtx}/resources/css/vendor/bootstrap-4.0.0.min.css">
-		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20251124">
-		<link rel="stylesheet" href="${appCtx}/resources/css/reset.css">
+		<link rel="stylesheet" href="${appCtx}/resources/vendor/fontawesome/css/all.min.css">
+		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20260807h">
+		<link rel="stylesheet" href="${appCtx}/resources/css/reset.css?v=20260807">
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/jquery-3.5.1.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/popper-1.12.9.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/bootstrap-4.0.0.min.js"></script>
+		<script defer type="text/javascript" src="${appCtx}/resources/vendor/fontawesome/fontawesome-solid.js"></script>
+		<script defer type="text/javascript" src="${appCtx}/resources/vendor/fontawesome/fontawesome-all.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/secure.js"></script>
-		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20251120"></script>
+		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20260807b"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/reset.js"></script>
 		<title>${page_title}</title>
 		<script type="text/javascript">
@@ -32,19 +35,25 @@
 	<body>
 		<div class="container h-100 min-100">
 			<div class="d-flex justify-content-center vertical-center">
-				<div class="card border-0 p-3 bg-light login-width">
+				<div class="card border-0 p-3 login-width">
 					<img src="${appCtx}/resources/img/logo_wide_black.svg" class="card-img-top" alt="${page_title}">
 					<div class="card-body">
 						<form id="reset_form" action="${appCtx}/resetPassword" method="post">
 							<input type="hidden" id="error_msg_general" value="${error_msg_general}" />
 							<input type="hidden" name="email" value="${email}" />
-							<div class="input-group form-group">
+							<div class="input-group form-group password-field">
 								<input type="password" class="form-control" name="pass" id="newPass" placeholder="${reset_ph_new_pass}" required>
 								<div id="newPassStatus"></div>
+								<button type="button" class="password-toggle-btn" data-target="newPass" tabindex="-1">
+									<i class="far fa-eye"></i>
+								</button>
 							</div>
-							<div class="input-group form-group">
+							<div class="input-group form-group password-field">
 								<input type="password" class="form-control" id="confirmPass" placeholder="${reset_ph_confirm_pass}" required>
 								<div id="confirmPassStatus"></div>
+								<button type="button" class="password-toggle-btn" data-target="confirmPass" tabindex="-1">
+									<i class="far fa-eye"></i>
+								</button>
 							</div>
 							<input type="submit" id="submitPass" value="${reset_btn_enter}" class="btn btn-primary w-100" />
 						</form>

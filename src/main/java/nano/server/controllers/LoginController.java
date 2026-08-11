@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,11 +15,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import nano.server.db.entities.Role;
 import nano.server.db.entities.User;
+import nano.server.db.services.def.IRoleService;
 import nano.server.dtos.LoginDto;
 import nano.server.dtos.RedirectDto;
 import nano.server.dtos.ResponseDto;
 import nano.server.dtos.ResultDto;
+import nano.server.dtos.UserDto;
 import nano.server.dtos.ValidateCodeDto;
 import nano.server.utils.EmailUtils;
 import nano.server.utils.ExceptionUtils;
@@ -30,7 +34,11 @@ import nano.server.utils.SecureUtils;
 public class LoginController extends BaseController {
 	private static Logger LOGGER = LogManager.getLogger(LoginController.class);
 	private static int MAX_REQUEST_CODE_TIME = 2 * 60 * 60 * 1000; // 2 hours
-	
+	private static String USER_ROLE_NAME = "User";
+
+	@Autowired
+	private IRoleService roleService;
+
 	@RequestMapping("/welcome")
 	public ModelAndView welcome(ModelMap model, HttpServletRequest request) {
 		try {
@@ -143,10 +151,61 @@ public class LoginController extends BaseController {
 			
 			return new ModelAndView("/login/forgot", model);
 		}
-		
+
 		return new ModelAndView("redirect:/accessDenied", model);
 	}
-	
+
+	@RequestMapping(value = "/register", method = { RequestMethod.GET })
+	public ModelAndView register(ModelMap model, HttpServletRequest request) {
+		if (IpAddressUtils.areInSameSubNet(request.getLocalAddr(), request.getRemoteAddr())) {
+			try {
+				localizeModel(model, request, "register");
+			} catch (Exception e) {
+				logException(LOGGER, e);
+			}
+
+			return new ModelAndView("/login/register", model);
+		}
+
+		return new ModelAndView("redirect:/accessDenied", model);
+	}
+
+	@RequestMapping(value = "/register", method = { RequestMethod.POST })
+	public @ResponseBody ResponseDto registerSubmit(ModelMap model, HttpServletRequest request) {
+		ResponseDto response = null;
+
+		if (IpAddressUtils.areInSameSubNet(request.getLocalAddr(), request.getRemoteAddr())) {
+			try {
+				UserDto userDto = getObjectFromRequest(request, UserDto.class);
+
+				User user = userService.getUser(userDto.getEmail(), SecureUtils.getDbKey());
+
+				if (user == null) {
+					String randomPass = SecureUtils.getRanbomPass();
+					Role role = roleService.getRole(USER_ROLE_NAME);
+
+					user = new User(userDto.getEmail(), randomPass, userDto.getName(), role, null);
+
+					userService.setUser(user, SecureUtils.getDbKey());
+
+					EmailUtils.sendNewAccountEmail(this, request, user.getEmail(), randomPass);
+
+					response = new RedirectDto(true, "/welcome", LocalizerUtils.getLocalizedText(request, "msg_register_success"));
+				} else {
+					response = new ResultDto(false, null, LocalizerUtils.getLocalizedText(request, "msg_register_already_exists"));
+				}
+			} catch (Exception e) {
+				logException(LOGGER, e);
+
+				response = new RedirectDto(false, "/internalError", ExceptionUtils.getErrorMessage(e));
+			}
+		} else {
+			response = new RedirectDto(false, "/accessDenied", null);
+		}
+
+		return response;
+	}
+
 	@RequestMapping(value = "/requestCode", method = { RequestMethod.POST })
 	public @ResponseBody ResponseDto requestCode(ModelMap model, HttpServletRequest request) {
 		ResponseDto response = null;

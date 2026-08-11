@@ -17,15 +17,15 @@
 		<link rel="manifest" href="${appCtx}/resources/icons/manifest.json">
 		<link rel="stylesheet" href="${appCtx}/resources/css/vendor/bootstrap-4.5.0.min.css">
 		<link rel="stylesheet" href="${appCtx}/resources/vendor/fontawesome/css/all.min.css">
-		<link rel="stylesheet" href="${appCtx}/resources/css/sidebar.css?v=20251125">
-		<link rel="stylesheet" href="${appCtx}/resources/css/main.css">
+		<link rel="stylesheet" href="${appCtx}/resources/css/sidebar.css?v=20260807c">
+		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20260807l">
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/jquery-3.5.1.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/popper-1.16.0.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/bootstrap-4.5.0.min.js"></script>
 		<script defer type="text/javascript" src="${appCtx}/resources/vendor/fontawesome/fontawesome-solid.js"></script>
 		<script defer type="text/javascript" src="${appCtx}/resources/vendor/fontawesome/fontawesome-all.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/secure.js"></script>
-		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20251124"></script>
+		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20260807b"></script>
 		<title>${page_title}</title>
 		<script type="text/javascript">
 			var appCtx ='${appCtx}';
@@ -44,12 +44,13 @@
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<%@include file="../../resources/img/logo_flat_white.svg" %>
+				<span class="navbar-brand-text">${page_title}</span>
 			</div>
 		</nav>
 		<div class="container-fluid mt-2">
 			<div class="row">
 				<nav id="sidebarMenu" class="col-md-2 d-none d-md-block bg-light sidebar small">
-					<div class="sidebar-sticky pt-4">
+					<div class="sidebar-sticky">
 						<ul class="nav flex-column">
 							<c:forEach items="${menuItems}" var="menuItem">
 							<li class="nav-item">

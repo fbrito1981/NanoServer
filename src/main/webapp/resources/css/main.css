@@ -1,3 +1,12 @@
+:root {
+	--brand-primary: #BA4C1B;
+	--brand-primary-dark: #8F3B14;
+	--brand-dark: #1A1F25;
+	--brand-dark-variant: #262D36;
+	--brand-light: #F2E2DA;
+	--brand-light-indicator: #E7C4B4;
+	--brand-white: #FCFCFC;
+}
 body, html {
 	height: 100%;
 }
@@ -64,7 +73,7 @@ body, html {
 }
 @keyframes spinner-border {
 	to { transform: rotate(360deg); }
-} 
+}
 .spinner-border {
 	display: inline-block;
 	width: 2rem;
@@ -82,9 +91,8 @@ body, html {
 	border-width: .2em;
 }
 .navbar-brand svg {
-	fill: white;
-	width: 50%;
-	height: 50%;
+	width: 43px;
+	height: 43px;
 }
 .btn-sm-important {
 	padding: 0.25rem 0.5rem !important;
@@ -185,4 +193,217 @@ body, html {
 }
 .lh-2 {
 	line-height: 2rem;
+}
+.navbar.bg-dark, nav.bg-dark {
+	background-color: var(--brand-dark) !important;
+}
+.sidebar.bg-light {
+	background-color: var(--brand-light) !important;
+}
+a {
+	color: var(--brand-primary);
+}
+a:hover {
+	color: var(--brand-primary-dark);
+}
+.text-primary {
+	color: var(--brand-primary) !important;
+}
+.border-primary {
+	border-color: var(--brand-primary) !important;
+}
+.badge-primary {
+	background-color: var(--brand-primary);
+}
+.btn-primary {
+	background-color: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+.btn-primary:hover,
+.btn-primary:active,
+.btn-primary:not(:disabled):not(.disabled).active,
+.btn-primary:not(:disabled):not(.disabled):active {
+	background-color: var(--brand-primary-dark);
+	border-color: var(--brand-primary-dark);
+}
+.btn-primary:focus,
+.btn-primary.focus,
+.btn-primary:not(:disabled):not(.disabled):active:focus {
+	box-shadow: 0 0 0 0.2rem rgba(186, 76, 27, .4);
+}
+.btn-outline-primary {
+	color: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+.btn-outline-primary:hover {
+	background-color: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+.btn-link {
+	color: var(--brand-primary);
+}
+.form-control:focus {
+	border-color: var(--brand-primary);
+	box-shadow: 0 0 0 0.2rem rgba(186, 76, 27, .25);
+}
+.list-group-item.active {
+	background-color: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+.page-item.active .page-link {
+	background-color: var(--brand-primary);
+	border-color: var(--brand-primary);
+}
+.custom-control-input:checked ~ .custom-control-label::before {
+	border-color: var(--brand-primary);
+	background-color: var(--brand-primary);
+}
+.spinner {
+	border-top-color: var(--brand-primary);
+	border-left-color: rgba(186, 76, 27, .3);
+	border-right-color: rgba(186, 76, 27, .3);
+	border-bottom-color: rgba(186, 76, 27, .3);
+}
+.spinner-border {
+	color: var(--brand-primary);
+}
+.xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_current,
+.xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box > div > div.xdsoft_current {
+	background: var(--brand-primary) !important;
+	box-shadow: none !important;
+}
+.xdsoft_datetimepicker .xdsoft_calendar td.xdsoft_today {
+	color: var(--brand-primary) !important;
+}
+.xdsoft_datetimepicker .xdsoft_calendar td:hover,
+.xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_time_box > div > div:hover {
+	background: var(--brand-primary-dark) !important;
+}
+.form-control,
+.btn {
+	border-radius: 50rem;
+}
+.locale-switcher {
+	border-radius: 50rem;
+	overflow: hidden;
+}
+.locale-switcher-item {
+	flex: 1 1 0;
+	padding: .4rem 1.1rem;
+	white-space: nowrap;
+	cursor: pointer;
+	background-color: var(--brand-light);
+	color: #6c757d;
+}
+.locale-switcher-item.active {
+	background-color: var(--brand-primary);
+	color: var(--brand-white);
+}
+.alert {
+	border-radius: 50rem;
+}
+.alert-dismissible .close {
+	top: 50%;
+	transform: translateY(-50%);
+}
+.password-field {
+	position: relative;
+}
+.password-field .form-control {
+	padding-right: 2.75rem;
+	border-top-right-radius: 50rem !important;
+	border-bottom-right-radius: 50rem !important;
+}
+.password-toggle-btn {
+	position: absolute;
+	top: 50%;
+	right: .9rem;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	padding: 0;
+	line-height: 1;
+	color: #6c757d;
+	cursor: pointer;
+	z-index: 5;
+}
+.password-toggle-btn:focus {
+	outline: none;
+}
+.navbar-brand-text {
+	color: var(--brand-white);
+	font-weight: 700;
+	font-size: 1.32rem;
+	margin-left: .6rem;
+	vertical-align: middle;
+}
+.bg-secondary {
+	background-color: var(--brand-dark) !important;
+	border-radius: 50rem;
+}
+table.dataTable thead th,
+.thead-dark th {
+	background-color: var(--brand-dark);
+	color: var(--brand-white);
+	border-color: var(--brand-dark);
+}
+table.dataTable {
+	border-collapse: separate;
+	border-spacing: 0;
+}
+table.dataTable thead tr:first-child th:first-child {
+	border-top-left-radius: .75rem;
+}
+table.dataTable thead tr:first-child th:last-child {
+	border-top-right-radius: .75rem;
+}
+.page-link {
+	border-radius: 50rem !important;
+	margin: 0 .2rem;
+	border-color: transparent;
+	color: var(--brand-primary);
+	padding: .5rem;
+	min-width: calc(1em + 1rem);
+	text-align: center;
+}
+.page-item.disabled .page-link {
+	color: #6c757d;
+}
+.page-item.active .page-link {
+	color: var(--brand-white);
+}
+.btn-secondary.btn-sm {
+	background-color: var(--brand-primary);
+	border-color: var(--brand-primary);
+	color: var(--brand-white);
+}
+.btn-secondary.btn-sm:hover,
+.btn-secondary.btn-sm:focus,
+.btn-secondary.btn-sm:active {
+	background-color: var(--brand-primary-dark) !important;
+	border-color: var(--brand-primary-dark) !important;
+}
+.list-group-item-info {
+	background-color: var(--brand-light);
+	color: var(--brand-primary-dark);
+	border-color: var(--brand-light-indicator) !important;
+}
+.list-group-item-info:hover,
+.list-group-item-info:focus,
+.list-group-item-info.list-group-item-action:hover,
+.list-group-item-info.list-group-item-action:focus {
+	background-color: var(--brand-light-indicator);
+	color: var(--brand-primary-dark);
+}
+.list-group-horizontal.w-max-content {
+	border-radius: 50rem;
+	overflow: hidden;
+}
+.alert-info {
+	background-color: var(--brand-light);
+	border-color: var(--brand-light-indicator);
+	color: var(--brand-primary-dark);
+}
+.alert-info .close {
+	color: var(--brand-primary-dark);
 }

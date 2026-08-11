@@ -16,13 +16,13 @@
 		<link rel="apple-touch-icon" href="${appCtx}/resources/icons/apple-touch-icon.png">
 		<link rel="manifest" href="${appCtx}/resources/icons/manifest.json">
 		<link rel="stylesheet" href="${appCtx}/resources/css/vendor/bootstrap-4.0.0.min.css">
-		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20251124">
+		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20260807h">
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/jquery-3.5.1.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/popper-1.12.9.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/bootstrap-4.0.0.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/secure.js"></script>
-		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20251120"></script>
-		<title>NanO Server</title>
+		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20260807b"></script>
+		<title>Fuerz4 Assistant</title>
 		<script type="text/javascript">
 			setTimeout(function() {
 				$('.card').animate({opacity: 0}, 500, 'swing', function() {
@@ -35,7 +35,7 @@
 		<div class="container h-100 min-100">
 			<div class="d-flex justify-content-center vertical-center">
 				<div class="card border-0 p-3 bg-light">
-					<img src="${appCtx}/resources/img/logo_wide_black.svg" alt="NanO Server" />
+					<img src="${appCtx}/resources/img/logo_wide_black.svg" alt="Fuerz4 Assistant" />
 					<div class="d-flex justify-content-center">
 						<div class="spinner-border m-5" role="status">
 							<span class="sr-only">Loading...</span>

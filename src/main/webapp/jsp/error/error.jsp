@@ -16,11 +16,11 @@
 		<link rel="apple-touch-icon" href="${appCtx}/resources/icons/apple-touch-icon.png">
 		<link rel="manifest" href="${appCtx}/resources/icons/manifest.json">
 		<link rel="stylesheet" href="${appCtx}/resources/css/vendor/bootstrap-4.0.0.min.css">
-		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20251124">
+		<link rel="stylesheet" href="${appCtx}/resources/css/main.css?v=20260807h">
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/jquery-3.5.1.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/popper-1.12.9.min.js"></script>
 		<script type="text/javascript" src="${appCtx}/resources/js/vendor/bootstrap-4.0.0.min.js"></script>
-		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20251120"></script>
+		<script type="text/javascript" src="${appCtx}/resources/js/main.js?v=20260807b"></script>
 		<title>${page_title}</title>
 	</head>
 	<body>

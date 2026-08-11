@@ -4,20 +4,19 @@
 	bottom: 0;
 	left: 0;
 	z-index: 100; /* Behind the navbar */
-	padding: 48px 0 0; /* Height of navbar */
+	padding: var(--navbar-height, 62px) 0 0; /* Height of navbar */
 	box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
 }
 @media (max-width: 767.98px) {
 	.sidebar {
-		top: 5rem;
+		top: var(--navbar-height, 62px);
 		padding: 0;
 	}
 }
 .sidebar-sticky {
 	position: relative;
 	top: 0;
-	height: calc(100vh - 48px);
-	padding-top: .5rem;
+	height: calc(100vh - var(--navbar-height, 62px));
 	overflow-x: hidden;
 	overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
 }
@@ -33,14 +32,16 @@
 	border-bottom: 1px solid rgba(0, 0, 0, .1);
 }
 .sidebar .nav-item:hover {
-	background-color: rgb(238, 239, 240) !important;
+	background-color: rgba(186, 76, 27, .1) !important;
 }
 .sidebar .nav-link {
 	font-size: 1rem;
 	color: #333;
 }
 .sidebar .nav-link.active {
-	color: #007bff;
+	color: #BA4C1B;
+	background-color: #E7C4B4;
+	border-radius: 1.5rem;
 }
 .sidebar .nav-link:hover {
 	color: inherit;
@@ -60,6 +61,6 @@
 		transform: translateX(0);
 	}
 	.sidebar {
-		top: 5rem; /* Existing */
+		top: var(--navbar-height, 62px); /* Existing */
 	}
 }

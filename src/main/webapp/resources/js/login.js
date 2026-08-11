@@ -27,6 +27,7 @@ $(document).ready(function() {
 							$('#login_ph_pass').attr('placeholder', dictionary['login_ph_pass']);
 							$('#login_btn_enter').val(dictionary['login_btn_enter']);
 							$('#login_btn_forgot').html(dictionary['login_btn_forgot']);
+							$('#login_btn_register').html(dictionary['login_btn_register']);
 						} else {
 							console.log(data.message);
 							errorMessage();
