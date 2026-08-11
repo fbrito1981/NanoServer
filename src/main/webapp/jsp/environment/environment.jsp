@@ -9,9 +9,10 @@
 <jsp:include page="../includes/header.jsp" />
 
 <link rel="stylesheet" href="${appCtx}/resources/css/jquery.datetimepicker.min.css">
+<link rel="stylesheet" href="${appCtx}/resources/css/panel.css?v=1">
 
 <script type="text/javascript" src="${appCtx}/resources/js/jquery.datetimepicker.full.min.js"></script>
-<script type="text/javascript" src="${appCtx}/resources/js/environment.js?v=1"></script>
+<script type="text/javascript" src="${appCtx}/resources/js/environment.js?v=2"></script>
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 
 <script type="text/javascript">
@@ -19,12 +20,15 @@ var locale = '${environment_locale}';
 var dateFormat = '${environment_date_format}';
 var generalErrorMessage = '${error_msg_general}';
 var generalInfoMessage = '${info_msg_general}';
-var fromDate = ${fromDate.getTime()};
-var toDate = ${toDate.getTime()};
+var todayDate = ${toDate.getTime()};
 var tempLabel = '${environment_temp_label}';
 var tempUnitLabel = '${environment_temp_unit_label}';
 var humLabel = '${environment_hum_label}';
 var humUnitLabel = '${environment_hum_unit_label}';
+var periodDayLabel = '${environment_period_day_label}';
+var periodMonthLabel = '${environment_period_month_label}';
+var periodYearLabel = '${environment_period_year_label}';
+var periodAllLabel = '${environment_period_all_label}';
 var dataFormAction = '${appCtx}/environment/data';
 </script>
 
@@ -39,9 +43,12 @@ var dataFormAction = '${appCtx}/environment/data';
 	</form>
 	<form id="data_form" method="post">
 		<input type="hidden" id="timeZone" name="timeZone" />
+		<input type="hidden" id="from" name="from" />
+		<input type="hidden" id="until" name="until" />
+		<input type="hidden" id="viewType" name="viewType" />
 		<div class="container">
-			<div class="form-row">
-				<div class="form-group col-md-3">
+			<div class="form-row mb-3">
+				<div class="form-group col-md-4">
 					<label for="device">${environment_device_label}</label>
 					<select id="device" name="device" class="form-control">
 						<option selected disabled>${environment_select_option_label}</option>
@@ -50,92 +57,47 @@ var dataFormAction = '${appCtx}/environment/data';
 						</c:forEach>
 					</select>
 				</div>
-				<div class="form-group col-md-3">
-					<label for="environmentViewType">${environment_view_type_label}</label>
-					<select id="viewType" name="viewType" class="form-control">
-						<c:forEach var="environmentViewType" items="${environmentViewTypes}">
-						<option value="${environmentViewType.getValue()}"
-							<c:if test="${environmentViewType.equals(environmentViewTypeDefault)}">selected</c:if>
-							>
-							${environmentViewType.getLabel()}
-						</option>
-						</c:forEach>
-					</select>
-				</div>
-				<div class="form-group col-md-3">
-					<label for="from">${environment_from_date_label}</label>
-					<input type="text" class="d-none" id="from_value" name="from">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
-						</div>
-						<input type="text" class="form-control" id="from" autocomplete="off" readonly>
-					</div>
-				</div>
-				<div class="form-group col-md-3">
-					<label for="until">${environment_until_date_label}</label>
-					<input type="text" class="d-none" id="until_value" name="until">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
-						</div>
-						<input type="text" class="form-control" id="until" autocomplete="off" readonly>
-						<div class="invalid-feedback">
-							${environment_date_error_message}
-						</div>
-					</div>
-				</div>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${environment_instant_values_label}</h4>
+			<div class="panel-card">
+				<div class="panel-card-header">
+					<h4>${environment_instant_values_label}</h4>
+					<button type="button" id="refreshInstant" class="panel-refresh-btn" title="${environment_refresh_label}">
+						<i class="fas fa-sync-alt"></i>
+					</button>
+				</div>
+				<div class="last-values d-none" id="lastValues">
+					<div class="last-value-item">
+						<span class="last-value-label">${environment_temp_label}</span>
+						<span id="tempValue" class="last-value-value">--</span>
 					</div>
-					<div class="card-body">
-						<div class="row">
-							<div class="col-sm-6">
-								<div class="card">
-									<div class="card-body text-center">
-										<h1 class="card-title">${environment_temp_label}</h1>
-										<h2 id="tempValue" class="display-4">--</h2>
-										<h6 class="no-device-selected">${environment_select_device_label}</h6>
-									</div>
-								</div>
-							</div>
-							<div class="col-sm-6">
-								<div class="card">
-									<div class="card-body text-center">
-										<h1 class="card-title">${environment_hum_label}</h1>
-										<h2 id="humValue" class="display-4">--</h2>
-										<h6 class="no-device-selected">${environment_select_device_label}</h6>
-									</div>
-								</div>
-							</div>
-						</div>
+					<div class="last-value-item">
+						<span class="last-value-label">${environment_hum_label}</span>
+						<span id="humValue" class="last-value-value">--</span>
 					</div>
 				</div>
+				<h6 class="no-device-selected" id="lastValuesPlaceholder">${environment_select_device_label}</h6>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${environment_temp_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="tempChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${environment_select_device_label}</h6>
-					</div>
-				</div>
+			<div class="chart-wrapper mb-3">
+				<div id="metricChart" class="panel-chart"></div>
+				<h6 class="no-device-selected" id="chartPlaceholder">${environment_select_device_label}</h6>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${environment_hum_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="humChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${environment_select_device_label}</h6>
-					</div>
-				</div>
+			<div class="metric-select-wrap">
+				<select id="metric" class="metric-select">
+					<option value="temp">${environment_temp_label}</option>
+					<option value="hum">${environment_hum_label}</option>
+				</select>
+				<i class="fas fa-chevron-down"></i>
+			</div>
+			<div class="period-toggle">
+				<button type="button" class="period-toggle-item active" data-period="day">${environment_period_day_label}</button>
+				<button type="button" class="period-toggle-item" data-period="month">${environment_period_month_label}</button>
+				<button type="button" class="period-toggle-item" data-period="year">${environment_period_year_label}</button>
+				<button type="button" class="period-toggle-item" data-period="all">${environment_period_all_label}</button>
+			</div>
+			<div class="date-picker-group" id="dateFilterWrap">
+				<i class="far fa-calendar-alt"></i>
+				<input type="text" id="datePicker" autocomplete="off" readonly>
+				<input type="text" class="d-none" id="datePicker_value">
 			</div>
 		</div>
 	</form>

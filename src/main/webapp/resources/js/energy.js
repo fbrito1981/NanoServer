@@ -1,13 +1,16 @@
 var instantTimer;
+var lastPowerLogs = null;
+var lastEnergyLogs = null;
+var selectedMetric = 'power';
+var selectedPeriod = 'day';
 
 $(document).ready(function() {
-	$('#device').change(onElementChanged);
-	$('#viewType').change(onElementChanged);
-	$('#from').change(onElementChanged);
-	$('#until').change(onElementChanged);
-	setDateValidation('from', 'until', 'data_form');
-	setupDatetimepicker('from', dateFormat, locale, fromDate, false);
-	setupDatetimepicker('until', dateFormat, locale, toDate, false);
+	$('#device').change(onDeviceChanged);
+	$('#metric').change(onMetricChanged);
+	$('#refreshInstant').click(onRefreshClicked);
+	$('.period-toggle-item').click(onPeriodClicked);
+	$('#datePicker').change(onDateChanged);
+	setupDatetimepicker('datePicker', dateFormat, locale, todayDate, false);
 	CanvasJS.addCultureInfo('es', {
 		decimalSeparator: ',',
 		digitGroupSeparator: '.',
@@ -24,263 +27,110 @@ $(document).ready(function() {
 	$('#timeZone').val(timeZone);
 });
 
-function onElementChanged() {
+function onDeviceChanged() {
 	var value = $('#device').val();
 	if (value.length > 0) {
 		$('#instantDevice').val(value);
-		if (instantTimer !== undefined) {
-			clearTimeout(instantTimer);
-		}
-		var viewType = $('#viewType').val();
-		if (['byMinute', 'byHour'].includes(viewType)) {
-			$('#until').val(null).prop('disabled', true).css('cursor', 'not-allowed');
-			$('#until_value').val(null);
-		} else {
-			$('#until').prop('disabled', false).css('cursor', 'default');
-			setupDatetimepicker('until', dateFormat, locale, toDate, false);
-		}
-		showLoading();
-		getEnergyValues();
+		clearInstantTimer();
+		resetPanels();
+		applyFilters();
 	}
+}
+
+function resetPanels() {
+	lastPowerLogs = null;
+	lastEnergyLogs = null;
+	$('#lastValues, #accumulatedValues').addClass('d-none');
+	$('#metricChart').empty();
+	$('.no-device-selected').show();
+}
+
+function onMetricChanged() {
+	selectedMetric = $('#metric').val();
+	renderChart();
+}
+
+function onPeriodClicked() {
+	selectedPeriod = $(this).data('period');
+	$('.period-toggle-item').removeClass('active');
+	$(this).addClass('active');
+	$('#dateFilterWrap').toggle(selectedPeriod !== 'all');
+	applyFilters();
+}
+
+function onDateChanged() {
+	applyFilters();
+}
+
+function onRefreshClicked() {
+	clearInstantTimer();
+	getInstantValues();
+}
+
+function applyFilters() {
+	var device = $('#device').val();
+	if (!device) {
+		return;
+	}
+	var baseMillis = parseInt($('#datePicker_value').val());
+	var baseDate = isNaN(baseMillis) ? new Date() : new Date(baseMillis);
+	var from, until, viewType;
+	switch (selectedPeriod) {
+	case 'month':
+		from = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+		until = new Date(from.getFullYear(), from.getMonth() + 1, 1);
+		viewType = 'byDay';
+		break;
+	case 'year':
+		from = new Date(baseDate.getFullYear(), 0, 1);
+		until = new Date(from.getFullYear() + 1, 0, 1);
+		viewType = 'byMonth';
+		break;
+	case 'all':
+		from = new Date(2000, 0, 1);
+		until = new Date();
+		until.setDate(until.getDate() + 1);
+		viewType = 'byYear';
+		break;
+	default:
+		from = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+		until = new Date(from);
+		until.setDate(until.getDate() + 1);
+		viewType = 'byHour';
+		break;
+	}
+	$('#from').val(from.getTime());
+	$('#until').val(until.getTime());
+	$('#viewType').val(viewType);
+	showLoading();
+	getEnergyValues();
 }
 
 var processData = function(response) {
 	hideLoading();
 	if (response && response.energyLogs) {
+		lastEnergyLogs = response.energyLogs;
+		updateAccumulated();
+		$('#accumulatedPlaceholder').hide();
+		$('#accumulatedValues').removeClass('d-none');
+		if (selectedMetric === 'energy') {
+			$('#chartPlaceholder').hide();
+			renderChart();
+		}
 		getDataValues();
-		var culture = locale.split('-')[0];
-		var energy = [];
-		response.energyLogs.forEach(function(item) {
-			energy.push({
-				x: new Date(item.created),
-				y: item.energy
-			});
-		});
-		$('.no-device-selected').hide();
-		var energyChart = new CanvasJS.Chart('energyChart', {
-			culture: culture,
-			axisY: {
-				title: energyUnitLabel
-			},
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			toolTip: {
-				contentFormatter: function(e) {
-					return parseTootlip(e, energyUnitLabel);
-				},
-				cornerRadius: 5
-			},
-			data: [
-				{
-					type: 'column',
-					name: energyLabel,
-					dataPoints: energy,
-					showInLegend: true
-				}
-			]
-		});
-		energyChart.render();
 	} else if (response && response.logs) {
+		lastPowerLogs = response.logs;
+		if (selectedMetric !== 'energy') {
+			$('#chartPlaceholder').hide();
+			renderChart();
+		}
 		getInstantValues();
-		var culture = locale.split('-')[0];
-		var activePower = [];
-		var reactivePower = [];
-		var apparentPower = [];
-		var volts = [];
-		var amps = [];
-		var cosPhis = [];
-		var frequencies = [];
-		response.logs.forEach(function(item) {
-			activePower.push({
-				x: new Date(item.created),
-				y: item.activePower
-			});
-			reactivePower.push({
-				x: new Date(item.created),
-				y: item.reactivePower
-			});
-			apparentPower.push({
-				x: new Date(item.created),
-				y: item.apparentPower
-			});
-			volts.push({
-				x: new Date(item.created),
-				y: item.volts
-			});
-			amps.push({
-				x: new Date(item.created),
-				y: item.amps
-			});
-			cosPhis.push({
-				x: new Date(item.created),
-				y: item.cosPhi
-			});
-			frequencies.push({
-				x: new Date(item.created),
-				y: item.frequency
-			});
-		});
-		$('.no-device-selected').hide();
-		var powerChart = new CanvasJS.Chart('powerChart', {
-			culture: culture,
-			axisY: {
-				title: powerUnitLabel
-			},
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			toolTip: {
-				contentFormatter: function(e) {
-					return parseTootlip(e, powerUnitLabel);
-				},
-				cornerRadius: 5
-			},
-			data: [
-				{
-					type: 'spline',
-					name: activePowerLabel,
-					dataPoints: activePower,
-					showInLegend: true
-				},
-				{
-					type: 'spline',
-					name: reactivePowerLabel,
-					dataPoints: reactivePower,
-					showInLegend: true
-				},
-				{
-					type: 'spline',
-					name: apparentPowerLabel,
-					dataPoints: apparentPower,
-					showInLegend: true
-				}
-			]
-		});
-		powerChart.render();
-		var levelsChart = new CanvasJS.Chart('levelsChart', {
-			culture: culture,
-			axisY: {
-				title: voltsLabel
-			},
-			axisY2: {
-				title: ampsLabel
-			},
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			toolTip: {
-				contentFormatter: function(e) {
-					return parseTootlip(e, [voltsUnitLabel, ampsUnitLabel]);
-				},
-				cornerRadius: 5
-			},
-			data: [
-				{
-					type: 'spline',
-					name: voltsLabel,
-					dataPoints: volts,
-					showInLegend: true
-				},
-				{
-					type: 'spline',
-					name: ampsLabel,
-					axisYType: 'secondary',
-					dataPoints: amps,
-					showInLegend: true
-				}
-			]
-		});
-		levelsChart.render();
-		var cosPhiChart = new CanvasJS.Chart('cosPhiChart', {
-			culture: culture,
-			axisY: {
-				title: angleLabel
-			},
-			axisY2: {
-				title: frequencyLabel
-			},
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			toolTip: {
-				contentFormatter: function(e) {
-					return parseTootlip(e, [cosPhiUnitLabel, frequencyUnitLabel]);
-				},
-				cornerRadius: 5
-			},
-			data: [
-				{
-					type: 'spline',
-					name: cosPhiLabel,
-					dataPoints: cosPhis,
-					showInLegend: true
-				},
-				{
-					type: 'spline',
-					name: frequencyLabel,
-					axisYType: 'secondary',
-					dataPoints: frequencies,
-					showInLegend: true
-				}
-			]
-		});
-		cosPhiChart.render();
-		var voltsChart = new CanvasJS.Chart('voltsChart', {
-			culture: culture,
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			data: [
-				{
-					type: 'doughnut',
-					dataPoints: [
-						{ y: 100, color: 'transparent', toolTipContent: null },
-						{ y: 23, color: '#EF3D20', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 50, color: '#86CC27', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 23, color: '#EF3D20', toolTipContent: null }
-					]
-				}
-			]
-		});
-		voltsChart.render();
-		var wattsChart = new CanvasJS.Chart('wattsChart', {
-			culture: culture,
-			legend: {
-				horizontalAlign: 'right', 
-				verticalAlign: 'center',
-			},
-			data: [
-				{
-					type: 'doughnut',
-					dataPoints: [
-						{ y: 100, color: 'transparent', toolTipContent: null },
-						{ y: 30, color: '#1CBD26', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 23, color: '#86CC27', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 18, color: '#FECE35', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 13, color: '#FB7923', toolTipContent: null },
-						{ y: 2, color: 'transparent', toolTipContent: null },
-						{ y: 8, color: '#EF3D20', toolTipContent: null }
-					]
-				}
-			]
-		});
-		wattsChart.render();
-		$('.needle').show();
-		$('.value').show();
-	} else if (response && response.volts) {
-		setVoltsAndFrequency(response.volts, response.frequency);
-		setWattsAndCosPhi(response.apparentPower, response.cosPhi);
+	} else if (response && response.volts !== undefined) {
+		$('#voltsValue').html(response.volts.toFixed(1) + ' ' + voltsUnitLabel);
+		$('#ampsValue').html(response.amps.toFixed(1) + ' ' + ampsUnitLabel);
+		$('#powerValue').html(response.activePower.toFixed(1) + ' ' + powerUnitLabel);
+		$('#lastValuesPlaceholder').hide();
+		$('#lastValues').removeClass('d-none');
 		instantTimer = setTimeout(function() {
 			getInstantValues();
 		}, 300000);
@@ -290,63 +140,120 @@ var processData = function(response) {
 	}
 };
 
-function parseTootlip(event, label) {
+function updateAccumulated() {
+	var sum = 0;
+	(lastEnergyLogs || []).forEach(function(item) {
+		sum += item.energy;
+	});
+	$('#accumulatedValue').html(sum.toFixed(2) + ' ' + energyUnitLabel);
+}
+
+function renderChart() {
+	var source, valueFn, unit;
+	switch (selectedMetric) {
+	case 'volts':
+		source = lastPowerLogs;
+		valueFn = function(item) { return item.volts; };
+		unit = voltsUnitLabel;
+		break;
+	case 'amps':
+		source = lastPowerLogs;
+		valueFn = function(item) { return item.amps; };
+		unit = ampsUnitLabel;
+		break;
+	case 'energy':
+		source = lastEnergyLogs;
+		valueFn = function(item) { return item.energy; };
+		unit = energyUnitLabel;
+		break;
+	default:
+		source = lastPowerLogs;
+		valueFn = function(item) { return item.activePower; };
+		unit = powerUnitLabel;
+		break;
+	}
+	if (!source) {
+		return;
+	}
+	var culture = locale.split('-')[0];
+	var points = source.map(function(item) {
+		return {
+			x: new Date(item.created),
+			y: valueFn(item)
+		};
+	});
+	var chart = new CanvasJS.Chart('metricChart', {
+		culture: culture,
+		axisX: {
+			gridColor: '#D8D2CC',
+			gridThickness: 1,
+			gridDashType: 'dash',
+			tickColor: '#D8D2CC',
+			lineColor: '#D8D2CC',
+			labelFontColor: '#6c757d'
+		},
+		axisY: {
+			gridColor: '#D8D2CC',
+			gridThickness: 1,
+			gridDashType: 'dash',
+			lineThickness: 0,
+			tickLength: 0,
+			labelFontColor: '#6c757d'
+		},
+		toolTip: {
+			contentFormatter: function(e) {
+				return parseTooltip(e, unit);
+			},
+			cornerRadius: 5
+		},
+		data: [
+			{
+				type: 'spline',
+				color: '#BA4C1B',
+				lineThickness: 3,
+				markerSize: 0,
+				dataPoints: points
+			}
+		]
+	});
+	chart.render();
+}
+
+function parseTooltip(event, label) {
 	var entry = event.entries[0];
-	var dataPoint = entry.dataPoint
+	var dataPoint = entry.dataPoint;
 	var title = parseChartDate(dataPoint.x);
 	var value = dataPoint.y.toFixed(2);
-	var unit = Array.isArray(label) ? label[entry.dataSeries.index] : label;
-	return `${title}<br>${value} ${unit}`;
+	return `${title}<br>${value} ${label}`;
 }
 
 function parseChartDate(value) {
 	var config = {};
 	var viewType = $('#viewType').val();
 	switch (viewType) {
-	case 'byMinute':
-		config.minute = '2-digit';
 	case 'byHour':
 		config.hour = '2-digit';
+		config.minute = '2-digit';
+		break;
 	case 'byDay':
 		config.day = '2-digit';
+		config.month = 'short';
+		break;
 	case 'byMonth':
 		config.month = 'short';
+		config.year = 'numeric';
+		break;
 	case 'byYear':
 		config.year = 'numeric';
+		break;
 	}
-	
-	var result = new Intl.DateTimeFormat(locale, config).format(value);
-	
-	return result;
+
+	return new Intl.DateTimeFormat(locale, config).format(value);
 }
 
-function setDateValidation(startId, endId, submitId) {
-	$('#' + startId).on('change', function() {
-		validateDates(startId, endId, submitId);
-	}).removeClass('is-invalid');
-	$('#' + endId).on('change', function() {
-		validateDates(startId, endId, submitId);
-	}).removeClass('is-invalid');
-	$('#' + submitId).prop('disabled', false);
-}
-
-function validateDates(startId, endId, submitId) {
-	var startValue = $('#' + startId + '_value').val();
-	var endValue = $('#' + endId + '_value').val();
-	var startDate = new Date(parseInt(startValue));
-	var endDate = new Date(parseInt(endValue));
-	
-	if (startDate != null && startDate.toString() != 'Invalid Date'
-		&& endDate != null && endDate.toString() != 'Invalid Date') {
-		if (endDate <= startDate) {
-			$('#' + startId).addClass('is-invalid');
-			$('#' + endId).addClass('is-invalid');
-			$('#' + submitId).prop('disabled', true);
-		} else {
-			$('#' + startId).removeClass('is-invalid');
-			$('#' + endId).removeClass('is-invalid');
-			$('#' + submitId).prop('disabled', false);
-		}
+function clearInstantTimer() {
+	if (instantTimer !== undefined) {
+		clearTimeout(instantTimer);
 	}
 }
 
@@ -361,44 +268,3 @@ function getDataValues() {
 function getInstantValues() {
 	$('#instant_form').submit();
 }
-
-function setVoltsAndFrequency(volts, frequency) {
-	var bottomLimit = 193;
-	var topLimit = 267;
-	var minVolts = 230 * .9;
-	var maxVolts = 230 * 1.1;
-	var minAngle = 36;
-	var maxAngle = 144;
-	var startVolts;
-	if (volts < bottomLimit) {
-		startVolts = bottomLimit - minVolts;
-	} else if (volts > topLimit) {
-		startVolts = topLimit - minVolts;
-	} else {
-		startVolts = volts - minVolts;
-	}
-	var propVolts = startVolts / (maxVolts - minVolts);
-	var propAngle = propVolts * (maxAngle - minAngle);
-	var angle = propAngle + minAngle;
-	$('#voltsNeedle').css('transform', 'rotate(' + angle + 'deg)');
-	$('#voltsValue').html(volts.toFixed(1) + ' ' + voltsUnitLabel);
-	$('#frequencyValue').html(frequency.toFixed(1) + ' ' + frequencyUnitLabel);
-}
-
-function setWattsAndCosPhi(watts, cosPhi) {
-	var minWatts = 0;
-	var maxWatts = 3000;
-	var minAngle = 0;
-	var maxAngle = 180;
-	var startWatts = watts;
-	if (watts > maxWatts) {
-		startWatts = maxWatts;
-	}
-	var propWatts = startWatts / (maxWatts - minWatts);
-	var propAngle = propWatts * (maxAngle - minAngle);
-	var angle = propAngle + minAngle;
-	$('#wattsNeedle').css('transform', 'rotate(' + angle + 'deg)');
-	$('#wattsValue').html(watts.toFixed(1) + ' ' + powerUnitLabel);
-	$('#cosPhiValue').html(cosPhi.toFixed(2) + ' ' + cosPhiUnitLabel);
-}
-

@@ -9,10 +9,11 @@
 <jsp:include page="../includes/header.jsp" />
 
 <link rel="stylesheet" href="${appCtx}/resources/css/jquery.datetimepicker.min.css">
-<link rel="stylesheet" href="${appCtx}/resources/css/energy.css?v=20251124">
+<link rel="stylesheet" href="${appCtx}/resources/css/panel.css?v=1">
 
 <script type="text/javascript" src="${appCtx}/resources/js/jquery.datetimepicker.full.min.js"></script>
-<script type="text/javascript" src="${appCtx}/resources/js/energy.js?v=20260521"></script>
+<script type="text/javascript" src="${appCtx}/resources/js/energy.js?v=20260811">
+</script>
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 
 <script type="text/javascript">
@@ -20,23 +21,19 @@ var locale = '${energy_locale}';
 var dateFormat = '${energy_date_format}';
 var generalErrorMessage = '${error_msg_general}';
 var generalInfoMessage = '${info_msg_general}';
-var fromDate = ${fromDate.getTime()};
-var toDate = ${toDate.getTime()};
+var todayDate = ${toDate.getTime()};
 var powerUnitLabel = '${energy_power_unit_label}';
 var energyUnitLabel = '${energy_unit_label}';
 var energyLabel = '${energy_energy_label}';
-var activePowerLabel = '${energy_active_power_label}';
-var reactivePowerLabel = '${energy_reactive_power_label}';
-var apparentPowerLabel = '${energy_apparent_power_label}';
 var voltsLabel = '${energy_volts_label}';
 var voltsUnitLabel = '${energy_volts_unit_label}';
-var ampsLabel = '${energy_amps_label}';
+var currentLabel = '${energy_current_label}';
 var ampsUnitLabel = '${energy_amps_unit_label}';
-var cosPhiLabel = '${energy_cos_phi_label}';
-var cosPhiUnitLabel = '${energy_cos_phi_unit_label}';
-var angleLabel = '${energy_angle_label}';
-var frequencyLabel = '${energy_frequency_label}';
-var frequencyUnitLabel = '${energy_frequency_unit_label}';
+var powerLabel = '${energy_power_label}';
+var periodDayLabel = '${energy_period_day_label}';
+var periodMonthLabel = '${energy_period_month_label}';
+var periodYearLabel = '${energy_period_year_label}';
+var periodAllLabel = '${energy_period_all_label}';
 var energyFormAction = '${appCtx}/energy/energy';
 var dataFormAction = '${appCtx}/energy/data';
 </script>
@@ -52,9 +49,12 @@ var dataFormAction = '${appCtx}/energy/data';
 	</form>
 	<form id="data_form" method="post">
 		<input type="hidden" id="timeZone" name="timeZone" />
+		<input type="hidden" id="from" name="from" />
+		<input type="hidden" id="until" name="until" />
+		<input type="hidden" id="viewType" name="viewType" />
 		<div class="container">
-			<div class="form-row">
-				<div class="form-group col-md-3">
+			<div class="form-row mb-3">
+				<div class="form-group col-md-4">
 					<label for="device">${energy_device_label}</label>
 					<select id="device" name="device" class="form-control">
 						<option selected disabled>${energy_select_option_label}</option>
@@ -63,120 +63,64 @@ var dataFormAction = '${appCtx}/energy/data';
 						</c:forEach>
 					</select>
 				</div>
-				<div class="form-group col-md-3">
-					<label for="energyViewType">${energy_view_type_label}</label>
-					<select id="viewType" name="viewType" class="form-control">
-						<c:forEach var="energyViewType" items="${energyViewTypes}">
-						<option value="${energyViewType.getValue()}"
-							<c:if test="${energyViewType.equals(energyViewTypeDefault)}">selected</c:if>
-							>
-							${energyViewType.getLabel()}
-						</option>
-						</c:forEach>
-					</select>
-				</div>
-				<div class="form-group col-md-3">
-					<label for="from">${energy_from_date_label}</label>
-					<input type="text" class="d-none" id="from_value" name="from">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
-						</div>
-						<input type="text" class="form-control" id="from" autocomplete="off" readonly>
-					</div>
-				</div>
-				<div class="form-group col-md-3">
-					<label for="until">${energy_until_date_label}</label>
-					<input type="text" class="d-none" id="until_value" name="until">
-					<div class="input-group">
-						<div class="input-group-prepend">
-							<div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
-						</div>
-						<input type="text" class="form-control" id="until" autocomplete="off" readonly>
-						<div class="invalid-feedback">
-							${energy_date_error_message}
-						</div>
-					</div>
-				</div>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${energy_instant_values_label}</h4>
+			<div class="panel-card">
+				<div class="panel-card-header">
+					<h4>${energy_instant_values_label}</h4>
+					<button type="button" id="refreshInstant" class="panel-refresh-btn" title="${energy_refresh_label}">
+						<i class="fas fa-sync-alt"></i>
+					</button>
+				</div>
+				<div class="last-values d-none" id="lastValues">
+					<div class="last-value-item">
+						<span class="last-value-label">${energy_volts_label}</span>
+						<span id="voltsValue" class="last-value-value">--</span>
 					</div>
-					<div class="card-body">
-						<div class="row">
-							<div class="col-sm-6">
-								<div class="card">
-									<div class="card-body text-center">
-										<h1 class="card-title">${energy_volts_label}</h1>
-										<div id="voltsChart" class="w-100" style="height: 250px;"></div>
-										<div id="voltsNeedle" class="needle"></div>
-										<span id="voltsValue" class="value"></span>
-										<h4 id="frequencyValue" class="card p-3 floating-value">--</h4>
-										<h6 class="no-device-selected">${energy_select_device_label}</h6>
-									</div>
-								</div>
-							</div>
-							<div class="col-sm-6">
-								<div class="card">
-									<div class="card-body text-center">
-										<h1 class="card-title">${energy_power_label}</h1>
-										<div id="wattsChart" class="w-100" style="height: 250px;"></div>
-										<div id="wattsNeedle" class="needle"></div>
-										<span id="wattsValue" class="value"></span>
-										<h4 id="cosPhiValue" class="card p-3 floating-value">--</h4>
-										<h6 class="no-device-selected">${energy_select_device_label}</h6>
-									</div>
-								</div>
-							</div>
-						</div>
+					<div class="last-value-item">
+						<span class="last-value-label">${energy_current_label}</span>
+						<span id="ampsValue" class="last-value-value">--</span>
+					</div>
+					<div class="last-value-item">
+						<span class="last-value-label">${energy_power_label}</span>
+						<span id="powerValue" class="last-value-value">--</span>
 					</div>
 				</div>
+				<h6 class="no-device-selected" id="lastValuesPlaceholder">${energy_select_device_label}</h6>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${energy_consumption_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="energyChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${energy_select_device_label}</h6>
+			<div class="panel-card">
+				<div class="panel-card-header">
+					<h4>${energy_accumulated_label}</h4>
+				</div>
+				<div class="last-values d-none" id="accumulatedValues">
+					<div class="last-value-item">
+						<span id="accumulatedValue" class="last-value-value">--</span>
 					</div>
 				</div>
+				<h6 class="no-device-selected" id="accumulatedPlaceholder">${energy_select_device_label}</h6>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${energy_power_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="powerChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${energy_select_device_label}</h6>
-					</div>
-				</div>
+			<div class="chart-wrapper mb-3">
+				<div id="metricChart" class="panel-chart"></div>
+				<h6 class="no-device-selected" id="chartPlaceholder">${energy_select_device_label}</h6>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${energy_levels_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="levelsChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${energy_select_device_label}</h6>
-					</div>
-				</div>
+			<div class="metric-select-wrap">
+				<select id="metric" class="metric-select">
+					<option value="power">${energy_power_label}</option>
+					<option value="volts">${energy_volts_label}</option>
+					<option value="amps">${energy_current_label}</option>
+					<option value="energy">${energy_energy_label}</option>
+				</select>
+				<i class="fas fa-chevron-down"></i>
 			</div>
-			<div class="row row-cols-1 no-gutters mb-3">
-				<div class="card">
-					<div class="card-header">
-						<h4>${energy_cos_phi_frequency_label}</h4>
-					</div>
-					<div class="card-body">
-						<div id="cosPhiChart" class="w-100 p-3" style="height: 250px;"></div>
-						<h6 class="no-device-selected">${energy_select_device_label}</h6>
-					</div>
-				</div>
+			<div class="period-toggle">
+				<button type="button" class="period-toggle-item active" data-period="day">${energy_period_day_label}</button>
+				<button type="button" class="period-toggle-item" data-period="month">${energy_period_month_label}</button>
+				<button type="button" class="period-toggle-item" data-period="year">${energy_period_year_label}</button>
+				<button type="button" class="period-toggle-item" data-period="all">${energy_period_all_label}</button>
+			</div>
+			<div class="date-picker-group" id="dateFilterWrap">
+				<i class="far fa-calendar-alt"></i>
+				<input type="text" id="datePicker" autocomplete="off" readonly>
+				<input type="text" class="d-none" id="datePicker_value">
 			</div>
 		</div>
 	</form>
