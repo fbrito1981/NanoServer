@@ -166,6 +166,16 @@ function renderChart() {
 		valueFn = function(item) { return item.energy; };
 		unit = energyUnitLabel;
 		break;
+	case 'frequency':
+		source = lastPowerLogs;
+		valueFn = function(item) { return item.frequency; };
+		unit = frequencyUnitLabel;
+		break;
+	case 'cosPhi':
+		source = lastPowerLogs;
+		valueFn = function(item) { return item.cosPhi; };
+		unit = '';
+		break;
 	default:
 		source = lastPowerLogs;
 		valueFn = function(item) { return item.activePower; };

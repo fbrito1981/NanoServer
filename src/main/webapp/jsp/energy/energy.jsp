@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="${appCtx}/resources/css/panel.css?v=1">
 
 <script type="text/javascript" src="${appCtx}/resources/js/jquery.datetimepicker.full.min.js"></script>
-<script type="text/javascript" src="${appCtx}/resources/js/energy.js?v=20260811">
+<script type="text/javascript" src="${appCtx}/resources/js/energy.js?v=20260812">
 </script>
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 
@@ -30,6 +30,9 @@ var voltsUnitLabel = '${energy_volts_unit_label}';
 var currentLabel = '${energy_current_label}';
 var ampsUnitLabel = '${energy_amps_unit_label}';
 var powerLabel = '${energy_power_label}';
+var frequencyLabel = '${energy_frequency_label}';
+var frequencyUnitLabel = '${energy_frequency_unit_label}';
+var cosPhiLabel = '${energy_cos_phi_label}';
 var periodDayLabel = '${energy_period_day_label}';
 var periodMonthLabel = '${energy_period_month_label}';
 var periodYearLabel = '${energy_period_year_label}';
@@ -108,6 +111,8 @@ var dataFormAction = '${appCtx}/energy/data';
 					<option value="volts">${energy_volts_label}</option>
 					<option value="amps">${energy_current_label}</option>
 					<option value="energy">${energy_energy_label}</option>
+					<option value="frequency">${energy_frequency_label}</option>
+					<option value="cosPhi">${energy_cos_phi_label}</option>
 				</select>
 				<i class="fas fa-chevron-down"></i>
 			</div>
