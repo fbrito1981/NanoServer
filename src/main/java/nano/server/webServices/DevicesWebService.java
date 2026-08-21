@@ -115,7 +115,11 @@ public class DevicesWebService extends BaseController {
 				if (user != null) {
 					DeviceDto deviceDto = MapperUtils.getObject(data, DeviceDto.class);
 
-					if (deviceDto.getUuid() != null && deviceDto.getName() != null) {
+					// model/os/version are NOT NULL columns on devices (see devices.sql) with no DB-side
+					// default; requiring them here turns a missing-field client bug into a clear
+					// SC_INVALID_PARAMS instead of an opaque SC_INTERNAL_SERVER_ERROR from the INSERT.
+					if (deviceDto.getUuid() != null && deviceDto.getName() != null && deviceDto.getModel() != null
+							&& deviceDto.getOs() != null && deviceDto.getVersion() != null) {
 						Device existingDevice = deviceService.getDevice(deviceDto.getUuid());
 
 						if (existingDevice != null) {
