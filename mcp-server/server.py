@@ -340,7 +340,10 @@ async def get_home_temperature_humidity(device_uuid: Optional[str] = None) -> di
 	"""
 	resolved_uuid = await _find_device("environment", device_uuid)
 
-	return await _post("/api/services/mcp/environment/latest", {"device": resolved_uuid})
+	data = await _post("/api/services/mcp/environment/latest", {"device": resolved_uuid})
+	if data is None:
+		raise RuntimeError("No hay lecturas registradas para el dispositivo indicado.")
+	return data
 
 
 @mcp.tool()
@@ -383,7 +386,10 @@ async def get_home_energy_consumption(device_uuid: Optional[str] = None) -> dict
 	"""
 	resolved_uuid = await _find_device("energy", device_uuid)
 
-	return await _post("/api/services/mcp/energy/latest", {"device": resolved_uuid})
+	data = await _post("/api/services/mcp/energy/latest", {"device": resolved_uuid})
+	if data is None:
+		raise RuntimeError("No hay lecturas registradas para el dispositivo indicado.")
+	return data
 
 
 @mcp.tool()

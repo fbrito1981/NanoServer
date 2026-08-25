@@ -255,15 +255,15 @@ public class EnergyController extends BaseController {
 				EnergyFormDto energyFormDto = getObjectFromRequest(request, EnergyFormDto.class);
 				
 				if (energyFormDto != null) {
-					EnergyLog energyLog = null;
-					
 					String deviceUuid = energyFormDto.getDevice();
-					
-					energyLog = energyLogService.getEnergyLog(deviceUuid);
-					
-					EnergyLogDto log = new EnergyLogDto(energyLog);
-					
-					return new ResultDto(true, SecureUtils.encrypt(log));
+
+					EnergyLog energyLog = energyLogService.getEnergyLog(deviceUuid);
+
+					if (energyLog == null) {
+						return new ResultDto(true, null);
+					}
+
+					return new ResultDto(true, SecureUtils.encrypt(new EnergyLogDto(energyLog)));
 				} else {
 					return new ResultDto(false, "", "Invalid form submit.");
 				}

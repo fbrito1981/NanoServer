@@ -187,9 +187,11 @@ public class EnvironmentController extends BaseController {
 
 					EnvironmentLog environmentLog = environmentLogService.getEnvironmentLog(deviceUuid);
 
-					EnvironmentLogDto log = new EnvironmentLogDto(environmentLog);
+					if (environmentLog == null) {
+						return new ResultDto(true, null);
+					}
 
-					return new ResultDto(true, SecureUtils.encrypt(log));
+					return new ResultDto(true, SecureUtils.encrypt(new EnvironmentLogDto(environmentLog)));
 				} else {
 					return new ResultDto(false, "", "Invalid form submit.");
 				}

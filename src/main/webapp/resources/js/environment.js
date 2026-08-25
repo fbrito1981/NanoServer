@@ -116,9 +116,6 @@ var processData = function(response) {
 		$('#humValue').html(response.hum.toFixed(1) + ' ' + humUnitLabel);
 		$('#lastValuesPlaceholder').hide();
 		$('#lastValues').removeClass('d-none');
-		instantTimer = setTimeout(function() {
-			getInstantValues();
-		}, 300000);
 	} else {
 		errorMessage($('#data_form'));
 		console.log(response.message);
@@ -217,5 +214,9 @@ function getDataValues() {
 }
 
 function getInstantValues() {
+	clearInstantTimer();
+	instantTimer = setTimeout(function() {
+		getInstantValues();
+	}, 300000);
 	$('#instant_form').submit();
 }

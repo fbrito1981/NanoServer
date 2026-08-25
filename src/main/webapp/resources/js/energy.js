@@ -131,9 +131,6 @@ var processData = function(response) {
 		$('#powerValue').html(response.activePower.toFixed(1) + ' ' + powerUnitLabel);
 		$('#lastValuesPlaceholder').hide();
 		$('#lastValues').removeClass('d-none');
-		instantTimer = setTimeout(function() {
-			getInstantValues();
-		}, 300000);
 	} else {
 		errorMessage($('#data_form'));
 		console.log(response.message);
@@ -276,5 +273,9 @@ function getDataValues() {
 }
 
 function getInstantValues() {
+	clearInstantTimer();
+	instantTimer = setTimeout(function() {
+		getInstantValues();
+	}, 300000);
 	$('#instant_form').submit();
 }

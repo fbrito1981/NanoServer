@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="${appCtx}/resources/css/panel.css?v=1">
 
 <script type="text/javascript" src="${appCtx}/resources/js/jquery.datetimepicker.full.min.js"></script>
-<script type="text/javascript" src="${appCtx}/resources/js/environment.js?v=2"></script>
+<script type="text/javascript" src="${appCtx}/resources/js/environment.js?v=3"></script>
 <script src="https://canvasjs.com/assets/script/jquery.canvasjs.min.js"></script>
 
 <script type="text/javascript">

@@ -110,7 +110,7 @@ public class McpWebService extends BaseController {
 				if (formDto.getDevice() != null) {
 					EnvironmentLog environmentLog = environmentLogService.getEnvironmentLog(formDto.getDevice());
 
-					return new ResultDto(true, new EnvironmentLogDto(environmentLog));
+					return new ResultDto(true, environmentLog != null ? new EnvironmentLogDto(environmentLog) : null);
 				} else {
 					responseType = ResponseType.SC_INVALID_PARAMS;
 				}
@@ -170,7 +170,7 @@ public class McpWebService extends BaseController {
 				if (formDto.getDevice() != null) {
 					EnergyLog energyLog = energyLogService.getEnergyLog(formDto.getDevice());
 
-					return new ResultDto(true, new EnergyLogDto(energyLog));
+					return new ResultDto(true, energyLog != null ? new EnergyLogDto(energyLog) : null);
 				} else {
 					responseType = ResponseType.SC_INVALID_PARAMS;
 				}
